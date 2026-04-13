@@ -413,42 +413,38 @@ task.spawn(function()
 				local hum = obj:FindFirstChildOfClass("Humanoid")
 				if not hum or hum.Health <= 0 then continue end
 
-				for _, partName in ipairs({"Head", "HumanoidRootPart", "Torso", "UpperTorso", "LowerTorso"}) do
-					local tPart = obj:FindFirstChild(partName)
-					if tPart and tPart:IsA("BasePart") then
-						if not tPart:GetAttribute("OrigSize") then
-							tPart:SetAttribute("OrigSize", tPart.Size)
-							tPart:SetAttribute("OrigTrans", tPart.Transparency)
-							tPart:SetAttribute("OrigColor", tPart.BrickColor.Name)
-						end
+				local tPart = obj:FindFirstChild("Head")
+				if tPart and tPart:IsA("BasePart") then
+					if not tPart:GetAttribute("OrigSize") then
+						tPart:SetAttribute("OrigSize", tPart.Size)
+						tPart:SetAttribute("OrigTrans", tPart.Transparency)
+						tPart:SetAttribute("OrigColor", tPart.BrickColor.Name)
+					end
 
-						if tPart.Size ~= hitboxCfg.size then
-							tPart.Size = hitboxCfg.size
-						end
-						tPart.CanCollide = false
-						tPart.Massless = true
+					if tPart.Size ~= hitboxCfg.size then
+						tPart.Size = hitboxCfg.size
+					end
+					tPart.CanCollide = false
+					tPart.Massless = true
 
-						if hitboxCfg.show then
-							tPart.Transparency = hitboxCfg.trans
-							tPart.BrickColor = hitboxCfg.color
-						else
-							tPart.Transparency = tPart:GetAttribute("OrigTrans") or 0
-						end
+					if hitboxCfg.show then
+						tPart.Transparency = hitboxCfg.trans
+						tPart.BrickColor = hitboxCfg.color
+					else
+						tPart.Transparency = tPart:GetAttribute("OrigTrans") or 0
 					end
 				end
 			end
 		else
 			for _, obj in ipairs(ws:GetChildren()) do
 				if obj:IsA("Model") then
-					for _, partName in ipairs({"Head", "HumanoidRootPart", "Torso", "UpperTorso", "LowerTorso"}) do
-						local tPart = obj:FindFirstChild(partName)
-						if tPart and tPart:GetAttribute("OrigSize") then
-							tPart.Size = tPart:GetAttribute("OrigSize")
-							tPart.Transparency = tPart:GetAttribute("OrigTrans") or 0
-							tPart.BrickColor = BrickColor.new(tPart:GetAttribute("OrigColor"))
-							tPart.CanCollide = true
-							tPart.Massless = false
-						end
+					local tPart = obj:FindFirstChild("Head")
+					if tPart and tPart:GetAttribute("OrigSize") then
+						tPart.Size = tPart:GetAttribute("OrigSize")
+						tPart.Transparency = tPart:GetAttribute("OrigTrans") or 0
+						tPart.BrickColor = BrickColor.new(tPart:GetAttribute("OrigColor"))
+						tPart.CanCollide = true
+						tPart.Massless = false
 					end
 				end
 			end
