@@ -19,7 +19,7 @@ local toggles = {
 }
 
 local cfg = {
-	aimStrength = 0.1,        -- Changed default
+	aimStrength = 1.0,
 	fov = 60,
 	targetPart = "Head",
 	maxDist = 500,
@@ -27,21 +27,20 @@ local cfg = {
 	espFill = Color3.fromRGB(255, 0, 0),
 	espOutline = Color3.fromRGB(255, 255, 255),
 	fillTrans = 0.5,
-	outTrans = 0,             -- Always visible outline
+	outTrans = 0,
 	scanRate = 0.5
 }
 
 local hitboxCfg = {
 	enabled = true,
 	part = "Head",
-	size = Vector3.new(5, 5, 5),   -- Slightly bigger default for better hitreg
+	size = Vector3.new(5, 5, 5),
 	show = true,
 	color = BrickColor.new("Bright red"),
 	trans = 0.6,
-	refreshRate = 0.3              -- Faster refresh for more reliable hitboxes
+	refreshRate = 0.3
 }
 
--- GUI Setup (unchanged)
 local gui = Instance.new("ScreenGui")
 gui.Name = "OmniMenu"
 gui.Parent = cg
@@ -213,7 +212,6 @@ local function createSlider(name, minV, maxV, def, cb)
 	end)
 end
 
--- Toggles
 createToggle("Aim Assist", "AimAssist")
 createToggle("Visuals (ESP)", "ESP")
 createToggle("Big Hitboxes", "Hitboxes")
@@ -221,12 +219,9 @@ createToggle("Fullbright", "Fullbright")
 createToggle("Instant Interact", "InstantInteract")
 createToggle("Del Corpses", "DelCorpses")
 
--- Sliders (Aim Strength now 1.0 - 1.3)
 createSlider("Aim Strength", 0.1, 1.3, cfg.aimStrength, function(v) cfg.aimStrength = v end)
 createSlider("FOV", 10, 300, cfg.fov, function(v) cfg.fov = v end)
-createSlider("Hitbox Size", 1, 20, hitboxCfg.size.X, function(v) 
-	hitboxCfg.size = Vector3.new(v, v, v) 
-end)
+createSlider("Hitbox Size", 1, 15, hitboxCfg.size.X, function(v) hitboxCfg.size = Vector3.new(v, v, v) end)
 
 uis.InputBegan:Connect(function(input, gpe)
 	if not gpe and input.KeyCode == Enum.KeyCode.RightControl then
@@ -240,7 +235,6 @@ pps.PromptShown:Connect(function(prompt)
 	end
 end)
 
--- ESP with always visible outline
 local function applyEsp(model)
 	if not toggles.ESP then return end
 	local hl = model:FindFirstChild("NPCHighlight")
@@ -252,7 +246,7 @@ local function applyEsp(model)
 	hl.FillColor = cfg.espFill
 	hl.OutlineColor = cfg.espOutline
 	hl.FillTransparency = cfg.fillTrans
-	hl.OutlineTransparency = 0          -- Always show outline
+	hl.OutlineTransparency = 0
 	hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
 end
 
@@ -274,7 +268,7 @@ local function refreshTargets()
 
 	for _, obj in ipairs(ws:GetChildren()) do
 		if not obj:IsA("Model") then continue end
-		if plrs:GetPlayerFromCharacter(obj) then continue end -- Skip real players
+		if plrs:GetPlayerFromCharacter(obj) then continue end
 
 		local root = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart
 		local dist = root and (root.Position - pPos).Magnitude or math.huge
@@ -317,7 +311,6 @@ local function refreshTargets()
 	validTargets = tTargets
 end
 
--- Del Corpses loop
 task.spawn(function()
 	while true do
 		if toggles.DelCorpses then
@@ -334,7 +327,6 @@ task.spawn(function()
 	end
 end)
 
--- Target refresh loop
 task.spawn(function()
 	while true do
 		refreshTargets()
@@ -342,7 +334,6 @@ task.spawn(function()
 	end
 end)
 
--- Main Aimbot Loop
 rs.RenderStepped:Connect(function(dt)
 	local center = Vector2.new(cam.ViewportSize.X / 2, cam.ViewportSize.Y / 2)
 
@@ -387,7 +378,7 @@ rs.RenderStepped:Connect(function(dt)
 		crossX.Color = Color3.fromRGB(255, 0, 0)
 		crossY.Color = Color3.fromRGB(255, 0, 0)
 
-		local root = bestTorso.Parent:FindFirstChild("HumanoidRootPart")
+		local root = bestTorso.Parent and bestTorso.Parent:FindFirstChild("HumanoidRootPart")
 		local vel = root and root.AssemblyLinearVelocity or Vector3.zero
 		local predictedPos = bestTorso.Position + vel * 0.055
 
@@ -413,7 +404,6 @@ rs.RenderStepped:Connect(function(dt)
 	end
 end)
 
--- Improved Hitbox Loop (fixes NPCs not getting hitboxes)
 task.spawn(function()
 	while true do
 		if toggles.Hitboxes then
@@ -423,8 +413,7 @@ task.spawn(function()
 				local hum = obj:FindFirstChildOfClass("Humanoid")
 				if not hum or hum.Health <= 0 then continue end
 
-				-- Try multiple common parts
-				for _, partName in ipairs({"Head", "HumanoidRootPart", "Torso", "UpperTorso"}) do
+				for _, partName in ipairs({"Head", "HumanoidRootPart", "Torso", "UpperTorso", "LowerTorso"}) do
 					local tPart = obj:FindFirstChild(partName)
 					if tPart and tPart:IsA("BasePart") then
 						if not tPart:GetAttribute("OrigSize") then
@@ -433,27 +422,32 @@ task.spawn(function()
 							tPart:SetAttribute("OrigColor", tPart.BrickColor.Name)
 						end
 
-						tPart.Size = hitboxCfg.size
+						if tPart.Size ~= hitboxCfg.size then
+							tPart.Size = hitboxCfg.size
+						end
 						tPart.CanCollide = false
 						tPart.Massless = true
 
 						if hitboxCfg.show then
 							tPart.Transparency = hitboxCfg.trans
 							tPart.BrickColor = hitboxCfg.color
+						else
+							tPart.Transparency = tPart:GetAttribute("OrigTrans") or 0
 						end
 					end
 				end
 			end
 		else
-			-- Reset hitboxes when toggled off
 			for _, obj in ipairs(ws:GetChildren()) do
 				if obj:IsA("Model") then
-					for _, partName in ipairs({"Head", "HumanoidRootPart", "Torso", "UpperTorso"}) do
+					for _, partName in ipairs({"Head", "HumanoidRootPart", "Torso", "UpperTorso", "LowerTorso"}) do
 						local tPart = obj:FindFirstChild(partName)
 						if tPart and tPart:GetAttribute("OrigSize") then
 							tPart.Size = tPart:GetAttribute("OrigSize")
-							tPart.Transparency = tPart:GetAttribute("OrigTrans")
+							tPart.Transparency = tPart:GetAttribute("OrigTrans") or 0
 							tPart.BrickColor = BrickColor.new(tPart:GetAttribute("OrigColor"))
+							tPart.CanCollide = true
+							tPart.Massless = false
 						end
 					end
 				end
@@ -463,7 +457,6 @@ task.spawn(function()
 	end
 end)
 
--- Fullbright
 lighting.Changed:Connect(function()
 	if not toggles.Fullbright then return end
 	lighting.Brightness = 2
@@ -473,6 +466,3 @@ lighting.Changed:Connect(function()
 	lighting.Ambient = Color3.fromRGB(178, 178, 178)
 	lighting.OutdoorAmbient = Color3.fromRGB(178, 178, 178)
 end)
-
-print("FOOL script")
-print("fixed hitbox and aim assist")
