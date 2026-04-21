@@ -236,7 +236,7 @@ createToggle("Speed 45", "Speed")
 
 createSlider("Aim Strength", 0.1, 1.3, cfg.aimStrength, function(v) cfg.aimStrength = v end)
 createSlider("FOV", 10, 300, cfg.fov, function(v) cfg.fov = v end)
-createSlider("Hitbox Size", 1, 15, hitboxCfg.size.X, function(v) hitboxCfg.size = Vector3.new(v, v, v) end)
+createSlider("Hitbox Size", 1, 18, hitboxCfg.size.X, function(v) hitboxCfg.size = Vector3.new(v, v, v) end)
 
 uis.InputBegan:Connect(function(input, gpe)
 	if not gpe and input.KeyCode == Enum.KeyCode.RightControl then
