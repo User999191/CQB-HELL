@@ -597,7 +597,7 @@ task.spawn(function()
 				hum.WalkSpeed = cfg.walkSpeed
 			end
 		end
-		task.wait(0.5)
+		task.wait()
 	end
 end)
 
