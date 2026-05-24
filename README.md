@@ -1,6 +1,3 @@
-
--- Added Gun Mods Improved Guis
-
 local ws = game:GetService("Workspace")
 local rs = game:GetService("RunService")
 local uis = game:GetService("UserInputService")
